@@ -9,12 +9,14 @@ public class Alomancia : MonoBehaviour
     public float attractionForce = 10f;
     private Vector3 mousePosition;
     private Vector3 worldPosition;
-    private RaycastHit2D hit;
+    private RaycastHit2D hitA;
+    private RaycastHit2D hitR;
     private GameObject metalCathed;
     private Rigidbody2D rbMetalRepel;
 
     private Rigidbody2D rbMetalAttrac;
-    private Metal objetoMetal;
+    private Metal objetoMetalAttrac;
+    private Metal objetoMetalRepel;
     private Rigidbody2D rbPlayer;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -27,43 +29,60 @@ public class Alomancia : MonoBehaviour
     // Update � chamado uma vez por frame
     void Update()
     {
+        // Obt�m a posi��o do mouse em coordenadas de tela
+        mousePosition = Input.mousePosition;
 
+        // Converte a posi��o do mouse para coordenadas do mundo
+        worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        worldPosition.z = 0; // Define z como 0 para 2D
         // Verifica se o botão esquerdo do mouse foi pressionado
-        if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1))
         {
-            // Obt�m a posi��o do mouse em coordenadas de tela
-            mousePosition = Input.mousePosition;
-
-            // Converte a posi��o do mouse para coordenadas do mundo
-            worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-            worldPosition.z = 0; // Define z como 0 para 2D
-
             // Realiza um Raycast 2D na posi��o do clique
-            hit = Physics2D.Raycast(worldPosition, Vector2.zero);
+            hitR = Physics2D.Raycast(worldPosition, Vector2.zero);
 
             // Verifica se o Raycast atingiu algum objeto
-            if (hit.collider != null && Input.GetMouseButtonDown(0) && (hit.collider.CompareTag("MetalColect") || hit.collider.CompareTag("MetalNotColect")))
-            {
-                isAttracting = true; // Alterna o estado de atra��o
-            }
-            if (hit.collider != null && Input.GetMouseButtonDown(1) && (hit.collider.CompareTag("MetalColect") || hit.collider.CompareTag("MetalNotColect")))
+            if (hit.collider != null && (hit.collider.CompareTag("MetalColect") || hit.collider.CompareTag("MetalNotColect")))
             {
                 isRepeling = true; // Alterna o estado de repulso
             }
         }
-            if (Input.GetMouseButtonUp(1))
+        if (Input.GetMouseButtonDown(0))
+        {
+
+
+            // Realiza um Raycast 2D na posi��o do clique
+            hitA = Physics2D.Raycast(worldPosition, Vector2.zero);
+
+            // Verifica se o Raycast atingiu algum objeto
+            if (hit.collider != null && (hit.collider.CompareTag("MetalColect") || hit.collider.CompareTag("MetalNotColect")))
+            {
+                isAttracting = true; // Alterna o estado de atrao
+            }
+        }
+        if (Input.GetMouseButtonUp(1))
         {
             isRepeling = false; // Desativa a repulso ao soltar o bot�o
             Debug.Log("Bot�o direito do mouse foi solto.");
+            if (objetoMetalRepel != null)
+            {
+
+                objetoMetalRepel = null;
+            }
         }
         if (Input.GetMouseButtonUp(0))
         {
             isAttracting = false; // Desativa a atra��o ao soltar o bot�o
             Debug.Log("Bot�o esquerdo do mouse foi solto.");
+            if (objetoMetalAttrac != null)
+            {
+
+                objetoMetalAttrac = null;
+            }
             if (metalCathed != null)
             {
                 mousePosition = Input.mousePosition;
-                objetoMetal.isGrapped = false;
+                objetoMetalAttrac.isGrapped = false;
                 // Converte a posi��o do mouse para coordenadas do mundo
                 worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
                 worldPosition.z = 0; // Define z como 0 para 2D
@@ -82,41 +101,41 @@ public class Alomancia : MonoBehaviour
         }
         if (isAttracting)
         {
-            objetoMetal = hit.collider.gameObject.GetComponent<Metal>();
+            objetoMetalAttrac = hit.collider.gameObject.GetComponent<Metal>();
 
-            objetoMetal.isGrapped = true;
-            rbMetalAttrac = objetoMetal.GetComponent<Rigidbody2D>();
-            rbMetalAttrac.AddForce((player.position - objetoMetal.transform.position).normalized * rbPlayer.mass);
+            objetoMetalAttrac.isGrapped = true;
+            rbMetalAttrac = objetoMetalAttrac.GetComponent<Rigidbody2D>();
+            rbMetalAttrac.AddForce((player.position - objetoMetalAttrac.transform.position).normalized * rbPlayer.mass);
             if (rbMetalAttrac.linearVelocity.magnitude <= deadZone)
             {
-                rbPlayer.AddForce((objetoMetal.transform.position - player.position).normalized * rbPlayer.mass);
+                rbPlayer.AddForce((objetoMetalAttrac.transform.position - player.position).normalized * rbPlayer.mass);
             }
             else
             {
-                rbPlayer.AddForce((objetoMetal.transform.position - player.position).normalized * Math.Min(rbMetalAttrac.mass, rbPlayer.mass));
+                rbPlayer.AddForce((objetoMetalAttrac.transform.position - player.position).normalized * Math.Min(rbMetalAttrac.mass, rbPlayer.mass));
             }
 
             // Debug.Log("Clicou no objeto: " + (player.position - objetoMetal.transform.position));
         }
         if (isRepeling)
         {
-            objetoMetal = hit.collider.gameObject.GetComponent<Metal>();
-            rbMetalRepel = objetoMetal.GetComponent<Rigidbody2D>();
-            rbMetalRepel.AddForce((objetoMetal.transform.position - player.position).normalized * rbPlayer.mass);
+            objetoMetalRepel = hit.collider.gameObject.GetComponent<Metal>();
+            rbMetalRepel = objetoMetalRepel.GetComponent<Rigidbody2D>();
+            rbMetalRepel.AddForce((objetoMetalRepel.transform.position - player.position).normalized * rbPlayer.mass);
             if (rbMetalRepel.linearVelocity.magnitude <= deadZone)
             {
-                rbPlayer.AddForce((player.position - objetoMetal.transform.position).normalized * rbPlayer.mass);
+                rbPlayer.AddForce((player.position - objetoMetalRepel.transform.position).normalized * rbPlayer.mass);
             }
             else
             {
-                rbPlayer.AddForce((player.position - objetoMetal.transform.position).normalized * Math.Min(rbMetalRepel.mass, rbPlayer.mass));
+                rbPlayer.AddForce((player.position - objetoMetalRepel.transform.position).normalized * Math.Min(rbMetalRepel.mass, rbPlayer.mass));
             }
             // Debug.Log("Clicou no objeto: " + (player.position - objetoMetal.transform.position));
         }
     }
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("MetalColect") && objetoMetal.isGrapped)
+        if (collision.gameObject.CompareTag("MetalColect") && objetoMetalAttrac.isGrapped)
         {
             // C�digo para coletar o metal
             metalCathed = collision.gameObject; // Armazena o objeto coletado
