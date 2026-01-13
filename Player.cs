@@ -4,6 +4,7 @@ public class Player : MonoBehaviour
 {
     private Rigidbody2D rb;
     public float acele = 5f;
+    public float jumpForce = 300f;
     public float maxSpeed = 10f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -21,6 +22,10 @@ public class Player : MonoBehaviour
         if (Mathf.Abs( rb.linearVelocity.x) > maxSpeed)
         {
             rb.linearVelocity = new Vector2(Mathf.Sign(rb.linearVelocity.x)*maxSpeed, rb.linearVelocity.y);
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            rb.AddForce(new Vector2(0f, jumpForce));
         }
     }
 }
