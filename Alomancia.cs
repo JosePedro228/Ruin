@@ -42,7 +42,7 @@ public class Alomancia : MonoBehaviour
             hitR = Physics2D.Raycast(worldPosition, Vector2.zero);
 
             // Verifica se o Raycast atingiu algum objeto
-            if (hit.collider != null && (hit.collider.CompareTag("MetalColect") || hit.collider.CompareTag("MetalNotColect")))
+            if (hitR.collider != null && (hitR.collider.CompareTag("MetalColect") || hitR.collider.CompareTag("MetalNotColect")))
             {
                 isRepeling = true; // Alterna o estado de repulso
             }
@@ -55,7 +55,7 @@ public class Alomancia : MonoBehaviour
             hitA = Physics2D.Raycast(worldPosition, Vector2.zero);
 
             // Verifica se o Raycast atingiu algum objeto
-            if (hit.collider != null && (hit.collider.CompareTag("MetalColect") || hit.collider.CompareTag("MetalNotColect")))
+            if (hitA.collider != null && (hitA.collider.CompareTag("MetalColect") || hitA.collider.CompareTag("MetalNotColect")))
             {
                 isAttracting = true; // Alterna o estado de atrao
             }
@@ -74,21 +74,17 @@ public class Alomancia : MonoBehaviour
         {
             isAttracting = false; // Desativa a atra��o ao soltar o bot�o
             Debug.Log("Bot�o esquerdo do mouse foi solto.");
-            if (objetoMetalAttrac != null)
-            {
-
-                objetoMetalAttrac = null;
-            }
+       
             if (metalCathed != null)
             {
                 mousePosition = Input.mousePosition;
                 objetoMetalAttrac.isGrapped = false;
                 // Converte a posi��o do mouse para coordenadas do mundo
-                worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-                worldPosition.z = 0; // Define z como 0 para 2D
+               /* worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
+                worldPosition.z = 0; // Define z como 0 para 2D*/
 
                 // Realiza um Raycast 2D na posi��o do clique
-                hit = Physics2D.Raycast(worldPosition, Vector2.zero);
+                hitA = Physics2D.Raycast(worldPosition, Vector2.zero);
 
                 Vector2 dropPosition = player.position + (worldPosition - player.position).normalized * 0.5f;
                 Vector3 vector3 = new Vector3(dropPosition.x, dropPosition.y, 0);
@@ -98,10 +94,15 @@ public class Alomancia : MonoBehaviour
                                                           // Debug.Log("Metal coletado: " + metalCathed.ToString());
                 metalCathed = null; // Reseta o objeto coletado ap�s processar
             }
+                 if (objetoMetalAttrac != null)
+            {
+
+                objetoMetalAttrac = null;
+            }
         }
         if (isAttracting)
         {
-            objetoMetalAttrac = hit.collider.gameObject.GetComponent<Metal>();
+            objetoMetalAttrac = hitA.collider.gameObject.GetComponent<Metal>();
 
             objetoMetalAttrac.isGrapped = true;
             rbMetalAttrac = objetoMetalAttrac.GetComponent<Rigidbody2D>();
@@ -119,7 +120,7 @@ public class Alomancia : MonoBehaviour
         }
         if (isRepeling)
         {
-            objetoMetalRepel = hit.collider.gameObject.GetComponent<Metal>();
+            objetoMetalRepel = hitR.collider.gameObject.GetComponent<Metal>();
             rbMetalRepel = objetoMetalRepel.GetComponent<Rigidbody2D>();
             rbMetalRepel.AddForce((objetoMetalRepel.transform.position - player.position).normalized * rbPlayer.mass);
             if (rbMetalRepel.linearVelocity.magnitude <= deadZone)
